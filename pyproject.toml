@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rmtool_py"
+version = "0.1.0"
+authors = [
+    {name = "Jean JACOB", email = "jean.jacob@sciencespo.fr"},
+]
+description = "A Python package for random matrix tools and free deconvolution methods."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "numpy>=1.20.0",
+    "scipy>=1.7.0",
+    "matplotlib>=3.4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Jeanjacob20/RMT"
+
