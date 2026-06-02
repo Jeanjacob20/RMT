@@ -50,8 +50,8 @@ def _charpoly(C, u, other_var):
 def _other_var(bp, u):
     u = sp.sympify(u)
     others = [s for s in (bp.var1, bp.var2) if s != u]
-    if not others:
-        raise ValueError(f"{u!r} is not one of {bp.var1!r}, {bp.var2!r}")
+    if len(others) != 1:
+        raise ValueError(f"{u!r} must be exactly one of {bp.var1!r}, {bp.var2!r}")
     return others[0]
 
 

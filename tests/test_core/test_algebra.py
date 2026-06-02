@@ -66,3 +66,19 @@ def test_boxplus_commutative():
     assert len(a) == len(b)
     for x, y in zip(a, b):
         assert abs(x - y) < 1e-6
+
+
+def test_boxtimes_constant_coefficient_polynomials():
+    # (u-2) and (u-3): roots 2 and 3; product polynomial is u-6, must not
+    # collapse to a constant under normalize().
+    a = BivariatePolynomial(u - 2, u, v)
+    b = BivariatePolynomial(u - 3, u, v)
+    res = boxtimes(a, b, u)
+    assert res.is_proportional_to(BivariatePolynomial(u - 6, u, v))
+
+
+def test_boxplus_constant_coefficient_polynomials():
+    a = BivariatePolynomial(u - 2, u, v)
+    b = BivariatePolynomial(u - 3, u, v)
+    res = boxplus(a, b, u)
+    assert res.is_proportional_to(BivariatePolynomial(u - 5, u, v))

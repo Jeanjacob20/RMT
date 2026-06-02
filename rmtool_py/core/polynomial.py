@@ -38,10 +38,15 @@ class BivariatePolynomial:
         strips any spurious factor that does not involve ``var``.
         """
         var = self.var1 if var is None else sp.sympify(var)
-        e = sp.expand(self.expr)
-        if e == 0:
+        if self.expr == 0:
             return BivariatePolynomial(sp.Integer(0), self.var1, self.var2)
-        common = sp.gcd(e, sp.diff(e, var))
+        e = sp.expand(self.expr)
+        deriv = sp.diff(e, var)
+        if deriv == 0:
+            # expr is independent of var: no repeated factors in var to remove,
+            # and gcd(e, 0) == e would otherwise collapse e to the constant 1.
+            return BivariatePolynomial(e, self.var1, self.var2)
+        common = sp.gcd(e, deriv)
         quotient = sp.cancel(e / common)
         return BivariatePolynomial(sp.expand(quotient), self.var1, self.var2)
 

@@ -63,5 +63,5 @@ def test_free_sum_of_two_semicircles_is_degree_two():
     back = enc.to_encoding(
         BivariatePolynomial(summed_rg.expr, r, g), "mz"
     )
-    # result is a genuine Stieltjes polynomial: degree 2 in m
-    assert sp.Poly(back.expr, m).degree() == 2
+    # free sum of two unit semicircles is a variance-2 semicircle: 2m^2 + mz + 1
+    assert back.is_proportional_to(BivariatePolynomial(2 * m ** 2 + m * z + 1, m, z))

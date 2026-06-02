@@ -62,3 +62,14 @@ def test_make_squarefree_handles_zero():
     bp = BivariatePolynomial(0, m, z)
     assert bp.make_squarefree().expr == 0
     assert bp.normalize().expr == 0
+
+
+def test_normalize_preserves_var2_independent_polynomial():
+    # A polynomial independent of z must NOT be collapsed to a constant.
+    bp = BivariatePolynomial(m ** 2 + 1, m, z)
+    assert bp.normalize().is_proportional_to(bp)
+
+
+def test_make_squarefree_var_independent_is_noop():
+    bp = BivariatePolynomial(m ** 2 + 1, m, z)
+    assert bp.make_squarefree(z).is_proportional_to(bp)

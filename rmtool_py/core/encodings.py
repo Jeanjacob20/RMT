@@ -110,4 +110,4 @@ def to_encoding(bp, target):
         # the final hop therefore already yields the canonical target polynomial
         v1, v2 = ENCODING_VARS[b]
         expr = BivariatePolynomial(expr, v1, v2).normalize().expr
-    return BivariatePolynomial(expr, *ENCODING_VARS[target])
+    return BivariatePolynomial(expr, *ENCODING_VARS[target]).normalize()
