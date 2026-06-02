@@ -1,3 +1,4 @@
+import pytest
 import sympy as sp
 from rmtool_py.core.atoms import wigner_lmz
 from rmtool_py.core.polynomial import BivariatePolynomial
@@ -34,3 +35,20 @@ def test_roundtrip_mz_sy_mz():
     lmz = wigner_lmz()
     back = enc.to_encoding(enc.to_encoding(lmz, "sy"), "mz")
     assert back.is_proportional_to(lmz)
+
+
+def test_to_encoding_mz_is_noop():
+    lmz = wigner_lmz()
+    assert enc.to_encoding(lmz, "mz").is_proportional_to(lmz)
+
+
+def test_to_encoding_unknown_target_raises():
+    with pytest.raises(ValueError):
+        enc.to_encoding(wigner_lmz(), "xy")
+
+
+def test_to_encoding_unknown_source_raises():
+    q, w = sp.symbols("q w")
+    bad = BivariatePolynomial(q + w, q, w)
+    with pytest.raises(ValueError):
+        enc.to_encoding(bad, "mz")

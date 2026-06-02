@@ -11,6 +11,7 @@ later plan, pinned with round-trip + Table-2 tests.
 """
 
 import sympy as sp
+from collections import deque
 
 from .polynomial import BivariatePolynomial
 
@@ -25,14 +26,9 @@ ENCODING_VARS = {
 }
 
 
-def _wrap(expr, name):
-    v1, v2 = ENCODING_VARS[name]
-    return BivariatePolynomial(expr, v1, v2).normalize()
-
-
 # --- direct conversions (Table 3) -----------------------------------------
-# Each takes the source expr and returns the target expr (un-normalized);
-# _wrap normalizes. Substitutions are simultaneous (SymPy dict subs).
+# Each takes the source expr and returns the target expr (un-normalized).
+# Substitutions are simultaneous (SymPy dict subs).
 
 def mz_to_gz(e):                 # I:  L_gz(g,z) = L_mz(-g, z)
     return e.subs({m: -g}, simultaneous=True)
@@ -73,7 +69,6 @@ for (a, b) in _EDGES:
 
 
 def _path(src, dst):
-    from collections import deque
     if src == dst:
         return [src]
     seen, queue = {src}, deque([[src]])
@@ -91,6 +86,10 @@ def _path(src, dst):
 
 def to_encoding(bp, target):
     """Convert a BivariatePolynomial to the named encoding, normalized."""
+    if target not in ENCODING_VARS:
+        raise ValueError(
+            f"unknown target encoding {target!r}; known: {list(ENCODING_VARS)}"
+        )
     # identify source by its var pair
     src = None
     for name, (v1, v2) in ENCODING_VARS.items():
@@ -98,14 +97,17 @@ def to_encoding(bp, target):
             src = name
             break
     if src is None:
-        raise ValueError(f"unknown source encoding for vars {bp.vars}")
+        raise ValueError(
+            f"vars ({bp.var1}, {bp.var2}) do not correspond to any known encoding"
+        )
     if src == target:
         return bp.normalize()
     expr = bp.expr
     steps = _path(src, target)
     for a, b in zip(steps, steps[1:]):
         expr = sp.expand(sp.together(_EDGES[(a, b)](expr)))
-        # normalize at each hop to keep degrees down and clear denominators
+        # normalize at each hop to keep degrees down and clear denominators;
+        # the final hop therefore already yields the canonical target polynomial
         v1, v2 = ENCODING_VARS[b]
         expr = BivariatePolynomial(expr, v1, v2).normalize().expr
-    return _wrap(expr, target)
+    return BivariatePolynomial(expr, *ENCODING_VARS[target])
