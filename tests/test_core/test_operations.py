@@ -60,6 +60,8 @@ def test_mult_free_product_eq_1_4():
 
 
 def test_times_wishart_matches_eq_1_4():
+    # Direct formula (Table 7) must match Eq. 1.4 = mult(Wigner, MP(1/2)),
+    # confirming times_wishart is the specialised form of free multiplication.
     out = ops.times_wishart(wigner_lmz(), sp.Rational(1, 2))
     expected = BivariatePolynomial(
         m ** 4 * z ** 2 - 2 * m ** 3 * z + m ** 2 + 4 * m * z + 4, m, z)

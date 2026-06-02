@@ -99,7 +99,8 @@ def gram_wishart(L, c, s):
 
 
 def compress(L, c):
-    """Random compression by factor c  (Sec 10.2, Eq. 10.8): in rg, g -> c*g."""
+    """Random compression by factor c  (Sec 10.2, Eq. 10.8): in rg, g -> c*g.
+    compress(1/2 delta_0 + 1/2 delta_1, c) reproduces Eq. 10.9 exactly."""
     c = sp.sympify(c)
     g = sp.symbols("g")
     lrg = enc.to_encoding(L, "rg")
