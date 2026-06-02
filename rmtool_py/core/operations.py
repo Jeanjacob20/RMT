@@ -61,3 +61,48 @@ def transpose(L, c):
     c = sp.sympify(c)
     mb = (1 - 1 / c) * (1 / (0 - z)) + m / c
     return _mz(L.expr.subs(m, mb, simultaneous=True))
+
+
+def add(L1, L2):
+    """A + B, free additive convolution  (Table 9(a)): rg -> boxplus over r -> mz."""
+    r = sp.symbols("r")
+    lr1 = enc.to_encoding(L1, "rg")
+    lr2 = enc.to_encoding(L2, "rg")
+    lrc = boxplus(lr1, lr2, r)
+    return enc.to_encoding(lrc, "mz")
+
+
+def mult(L1, L2):
+    """A x B, free multiplicative convolution  (Table 9(b)): sy -> boxtimes over s -> mz."""
+    s = sp.symbols("s")
+    ls1 = enc.to_encoding(L1, "sy")
+    ls2 = enc.to_encoding(L2, "sy")
+    lsc = boxtimes(ls1, ls2, s)
+    return enc.to_encoding(lsc, "mz")
+
+
+def times_wishart(L, c):
+    """A x W(c), "Multiply Wishart"  (Table 7):
+    alpha = 1 - c - c z m; m -> m*alpha, z -> z/alpha  (simultaneous)."""
+    c = sp.sympify(c)
+    alpha = 1 - c - c * z * m
+    return _mz(L.expr.subs({m: m * alpha, z: z / alpha}, simultaneous=True))
+
+
+def gram_wishart(L, c, s):
+    """(sqrt(A) + sqrt(s) G)(sqrt(A) + sqrt(s) G)', "Grammian"  (Table 7):
+    alpha = 1 + s c m; beta = alpha*(z alpha + s (c - 1)); m -> m/alpha, z -> beta."""
+    c, s = sp.sympify(c), sp.sympify(s)
+    alpha = 1 + s * c * m
+    beta = alpha * (z * alpha + s * (c - 1))
+    return _mz(L.expr.subs({m: m / alpha, z: beta}, simultaneous=True))
+
+
+def compress(L, c):
+    """Random compression by factor c  (Sec 10.2, Eq. 10.8): in rg, g -> c*g."""
+    c = sp.sympify(c)
+    g = sp.symbols("g")
+    lrg = enc.to_encoding(L, "rg")
+    compressed = BivariatePolynomial(
+        lrg.expr.subs(g, c * g, simultaneous=True), *lrg.vars)
+    return enc.to_encoding(compressed, "mz")
