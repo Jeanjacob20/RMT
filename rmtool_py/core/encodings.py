@@ -5,9 +5,8 @@ Encodings (paper Fig. 3 / Table 2):
     gz   Cauchy    g(z)=-m    vars (g, z)
     rg   R-transform r(g)     vars (r, g)
     sy   S-transform s(y)     vars (s, y)
-
-The moment (muz) and eta (etaz) encodings (Table-3 rows V-VI) are added in a
-later plan, pinned with round-trip + Table-2 tests.
+    muz  moment      mu(z)    vars (mu, z)
+    etaz eta         eta(z)   vars (eta, z)
 """
 
 import sympy as sp
@@ -30,7 +29,8 @@ ENCODING_VARS = {
 
 # --- direct conversions (Table 3) -----------------------------------------
 # Each takes the source expr and returns the target expr (un-normalized).
-# Substitutions are simultaneous (SymPy dict subs).
+# Rows I-IV use simultaneous dict subs; rows V-VI (muz/etaz) use sequential
+# subs, transcribed from the paper's Table-3 MATLAB code column (z first).
 
 def mz_to_gz(e):                 # I:  L_gz(g,z) = L_mz(-g, z)
     return e.subs({m: -g}, simultaneous=True)

@@ -1,11 +1,11 @@
 import pytest
 import sympy as sp
-from rmtool_py.core.atoms import wigner_lmz
+from rmtool_py.core.atoms import wigner_lmz, atomic_lmz
 from rmtool_py.core.polynomial import BivariatePolynomial
 from rmtool_py.core import encodings as enc
 from rmtool_py.core.algebra import boxplus
 
-m, z, g, r, s, y = sp.symbols("m z g r s y")
+m, z, g, r, s, y, mu, eta = sp.symbols("m z g r s y mu eta")
 
 
 def _prop(bp, expr, v1, v2):
@@ -65,11 +65,6 @@ def test_free_sum_of_two_semicircles_is_degree_two():
     )
     # free sum of two unit semicircles is a variance-2 semicircle: 2m^2 + mz + 1
     assert back.is_proportional_to(BivariatePolynomial(2 * m ** 2 + m * z + 1, m, z))
-
-
-from rmtool_py.core.atoms import atomic_lmz
-
-mu, eta = sp.symbols("mu eta")
 
 
 def test_wigner_muz_etaz():
