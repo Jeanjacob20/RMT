@@ -6,7 +6,9 @@ path (RMTool MomF) builds a D-finite linear recurrence and unrolls it.
 """
 
 import warnings
+from dataclasses import dataclass
 
+import numpy as np
 import sympy as sp
 from sympy.holonomic.holonomicerrors import BaseHolonomicError
 
@@ -72,3 +74,41 @@ def moments(L, k, method="series"):
     if method == "fast":
         return _moments_fast(L, k)
     raise ValueError("method must be 'series' or 'fast'")
+
+
+@dataclass
+class PdfInfo:
+    """Result of density extraction (RMTool ``pdfinfo``)."""
+    range: list        # grid x-values
+    density: list      # (1/pi) Im m at the selected right root
+    all_roots: list    # list of all m-roots per grid point (transparency)
+
+
+def _default_right_root(roots):
+    """Physical Stieltjes branch: among Im>0 roots, the largest imaginary part."""
+    upper = [r for r in roots if r.imag > 1e-9]
+    if not upper:
+        return 0.0 + 0.0j
+    return max(upper, key=lambda r: r.imag)
+
+
+def density(L, grid, eps=1e-8, root_selector=None):
+    """Limiting eigenvalue density on ``grid`` (RMTool ``Lmz2pdf``).
+
+    For each x, solve L_mz(m, x + i eps) for all roots in m and report
+    rho(x) = (1/pi) Im m_right.  All roots are returned in ``all_roots``.
+    ``root_selector(roots) -> complex`` overrides the default branch choice.
+    """
+    select = root_selector or _default_right_root
+    mvar = L.var1
+    poly_m = sp.Poly(L.expr, mvar)
+    zvar = L.var2
+    rng, dens, allroots = [], [], []
+    for x in grid:
+        zc = complex(x) + 1j * eps
+        coeffs = [complex(c.subs(zvar, zc)) for c in poly_m.all_coeffs()]
+        roots = list(np.roots(coeffs)) if len(coeffs) > 1 else []
+        rng.append(float(x))
+        allroots.append(roots)
+        dens.append(max(select(roots).imag / np.pi, 0.0))
+    return PdfInfo(range=rng, density=dens, all_roots=allroots)

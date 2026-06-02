@@ -47,3 +47,31 @@ def test_moments_fast_falls_back_to_series(monkeypatch):
 def test_moments_invalid_method():
     with pytest.raises(ValueError, match="method"):
         extract.moments(wigner_lmz(), 3, method="bogus")
+
+
+import numpy as np
+
+
+def test_density_wigner_peak_at_zero():
+    # Semicircle rho(0) = sqrt(4)/ (2 pi) = 1/pi.
+    info = extract.density(wigner_lmz(), [0.0])
+    assert abs(info.density[0] - 1.0 / np.pi) < 1e-3
+
+
+def test_density_wigner_zero_outside_support():
+    info = extract.density(wigner_lmz(), [3.0])     # support is [-2, 2]
+    assert abs(info.density[0]) < 1e-6
+
+
+def test_density_mp_support_within_edges():
+    # MP(1/4): support [(1-1/2)^2, (1+1/2)^2] = [0.25, 2.25].
+    grid = list(np.arange(-0.5, 3.0, 0.02))
+    info = extract.density(marchenko_pastur(sp.Rational(1, 4)), grid)
+    positive = [x for x, d in zip(info.range, info.density) if d > 1e-4]
+    assert min(positive) > 0.24 - 0.05
+    assert max(positive) < 2.25 + 0.05
+
+
+def test_density_returns_all_roots():
+    info = extract.density(wigner_lmz(), [0.0])
+    assert info.all_roots is not None and len(info.all_roots[0]) == 2
