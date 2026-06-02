@@ -23,3 +23,14 @@ def atomic_lmz(weights, points):
     stieltjes = sum((w / (p - z) for w, p in zip(weights, points)), sp.Integer(0))
     bp = BivariatePolynomial(m - stieltjes, m, z)
     return bp.normalize()
+
+
+def marchenko_pastur(c):
+    """Marcenko-Pastur law with aspect ratio ``c`` (Table 2(b)).
+
+    L_mz = c z m^2 - (1 - c - z) m + 1.  The density support is
+    [(1 - sqrt(c))^2, (1 + sqrt(c))^2]; ``c`` may be numeric or symbolic.
+    For Laloux's normalization use c = N/T = 1/Q and scale by sigma^2.
+    """
+    c = sp.sympify(c)
+    return BivariatePolynomial(c * z * m ** 2 - (1 - c - z) * m + 1, m, z)
