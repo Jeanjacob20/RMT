@@ -73,3 +73,27 @@ def test_normalize_preserves_var2_independent_polynomial():
 def test_make_squarefree_var_independent_is_noop():
     bp = BivariatePolynomial(m ** 2 + 1, m, z)
     assert bp.make_squarefree(z).is_proportional_to(bp)
+
+
+def test_canonical_form_collapses_constant_multiple():
+    a = BivariatePolynomial(2 * m ** 2 + 2 * m * z + 2, m, z)
+    b = BivariatePolynomial(m ** 2 + m * z + 1, m, z)
+    assert a.canonical_form() == b.canonical_form()
+
+
+def test_canonical_form_collapses_negative_and_fraction():
+    a = BivariatePolynomial(-sp.Rational(2, 3) * (m ** 2 + m * z + 1), m, z)
+    b = BivariatePolynomial(m ** 2 + m * z + 1, m, z)
+    assert a.canonical_form() == b.canonical_form()
+
+
+def test_canonical_form_distinguishes_measures():
+    a = BivariatePolynomial(m ** 2 + m * z + 1, m, z)
+    c = BivariatePolynomial(m ** 2 + m * z + 2, m, z)
+    assert a.canonical_form() != c.canonical_form()
+
+
+def test_canonical_form_is_hashable_and_consistent():
+    a = BivariatePolynomial(2 * m ** 2 + 2 * m * z + 2, m, z)
+    b = BivariatePolynomial(m ** 2 + m * z + 1, m, z)
+    assert hash(a.canonical_form()) == hash(b.canonical_form())

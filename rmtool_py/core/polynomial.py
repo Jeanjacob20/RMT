@@ -75,5 +75,26 @@ class BivariatePolynomial:
         ratio = sp.cancel(e1 / e2)
         return len(ratio.free_symbols) == 0 and ratio != 0
 
+    def canonical_form(self):
+        """A canonical SymPy expression invariant under multiplication by a
+        nonzero constant (the equivalence-class representative).
+
+        normalize -> view every free symbol as a polynomial generator (so all
+        coefficients are rational numbers) -> remove integer content -> fix the
+        leading-term sign positive. Two measures whose L_mz are proportional by a
+        nonzero constant share an identical canonical_form (hashable, == comparable).
+        """
+        e = self.normalize().expr
+        if e == 0 or not e.free_symbols:
+            return sp.Integer(0) if e == 0 else sp.Integer(1)
+        gens = sorted(e.free_symbols, key=lambda sym: sym.sort_key())
+        poly = sp.Poly(e, *gens)
+        _content, prim = poly.primitive()       # coeffs become coprime integers
+        lead_coeff = prim.terms()[0][1]          # leading monomial coeff (a number)
+        prim_expr = prim.as_expr()
+        if lead_coeff < 0:
+            prim_expr = -prim_expr
+        return sp.expand(prim_expr)
+
     def __repr__(self):
         return f"BivariatePolynomial({self.expr}, {self.var1}, {self.var2})"
