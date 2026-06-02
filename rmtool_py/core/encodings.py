@@ -15,7 +15,7 @@ from collections import deque
 
 from .polynomial import BivariatePolynomial
 
-m, z, g, r, s, y = sp.symbols("m z g r s y")
+m, z, g, r, s, y, mu, eta = sp.symbols("m z g r s y mu eta")
 
 # encoding name -> (transform var, argument var)
 ENCODING_VARS = {
@@ -23,6 +23,8 @@ ENCODING_VARS = {
     "gz": (g, z),
     "rg": (r, g),
     "sy": (s, y),
+    "muz": (mu, z),
+    "etaz": (eta, z),
 }
 
 
@@ -54,12 +56,30 @@ def sy_to_mz(e):                 # IV: L_mz = L_sy(s=m/(z*m+1), y=-z*m-1)
     return e.subs({s: m / (z * m + 1), y: -z * m - 1}, simultaneous=True)
 
 
+def mz_to_muz(e):                # V:  Lmuz = Lmz(-mu*z, 1/z)
+    return e.subs(z, 1 / z).subs(m, -mu * z)
+
+
+def muz_to_mz(e):                # V:  Lmz = Lmuz(-m*z, 1/z)
+    return e.subs(z, 1 / z).subs(mu, -m * z)
+
+
+def mz_to_etaz(e):               # VI: Letaz = Lmz(z*eta, -1/z)   (code column: +z*eta)
+    return e.subs(z, -1 / z).subs(m, z * eta)
+
+
+def etaz_to_mz(e):               # VI: Lmz = Letaz(-z*m, -1/z)
+    return e.subs(z, -1 / z).subs(eta, -z * m)
+
+
 # --- conversion graph -------------------------------------------------------
 # edge: (from, to) -> function
 _EDGES = {
     ("mz", "gz"): mz_to_gz, ("gz", "mz"): gz_to_mz,
     ("gz", "rg"): gz_to_rg, ("rg", "gz"): rg_to_gz,
     ("mz", "sy"): mz_to_sy, ("sy", "mz"): sy_to_mz,
+    ("mz", "muz"): mz_to_muz, ("muz", "mz"): muz_to_mz,
+    ("mz", "etaz"): mz_to_etaz, ("etaz", "mz"): etaz_to_mz,
 }
 
 # adjacency for BFS shortest path
