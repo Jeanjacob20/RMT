@@ -5,11 +5,14 @@ L_muz(mu, z) = 0. The "series" path (RMTool MomS) solves order-by-order; the "fa
 path (RMTool MomF) builds a D-finite linear recurrence and unrolls it.
 """
 
+import warnings
+
 import sympy as sp
+from sympy.holonomic.holonomicerrors import BaseHolonomicError
 
 from . import encodings as enc
 
-m, z, mu = sp.symbols("m z mu")
+z, mu = sp.symbols("z mu")
 
 
 def _moments_series(L, k):
@@ -51,7 +54,11 @@ def _moments_fast(L, k):
         ser = hol.series(n=k + 1)                       # uses the recurrence internally
         poly = ser.removeO() if hasattr(ser, "removeO") else ser
         return [sp.nsimplify(poly.coeff(z, j)) for j in range(1, k + 1)]
-    except Exception:
+    except (NotImplementedError, ValueError, BaseHolonomicError):
+        warnings.warn(
+            "_moments_fast: holonomic path failed; falling back to series method",
+            stacklevel=2,
+        )
         return _moments_series(L, k)
 
 

@@ -1,3 +1,4 @@
+import pytest
 import sympy as sp
 
 from rmtool_py.core.atoms import wigner_lmz, marchenko_pastur
@@ -31,3 +32,18 @@ def test_moments_fast_matches_series_mp_numeric():
     fast = extract.moments(mp, 6, method="fast")
     slow = extract.moments(mp, 6, method="series")
     assert [sp.nsimplify(a) for a in fast] == [sp.nsimplify(b) for b in slow]
+
+
+def test_moments_fast_falls_back_to_series(monkeypatch):
+    import sympy.holonomic as sh
+    def _boom(*a, **kw):
+        raise NotImplementedError("forced failure")
+    monkeypatch.setattr(sh, "expr_to_holonomic", _boom)
+    with pytest.warns(UserWarning):
+        result = extract.moments(wigner_lmz(), 4, method="fast")
+    assert [sp.nsimplify(x) for x in result] == [0, 1, 0, 2]
+
+
+def test_moments_invalid_method():
+    with pytest.raises(ValueError, match="method"):
+        extract.moments(wigner_lmz(), 3, method="bogus")
