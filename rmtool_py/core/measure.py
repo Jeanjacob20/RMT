@@ -35,9 +35,13 @@ class AlgebraicMeasure:
 
     # --- operators --------------------------------------------------------
     def __add__(self, other):
+        if not isinstance(other, AlgebraicMeasure):
+            return NotImplemented
         return AlgebraicMeasure(operations.add(self.lmz, other.lmz))
 
     def __mul__(self, other):
+        if not isinstance(other, AlgebraicMeasure):
+            return NotImplemented
         return AlgebraicMeasure(operations.mult(self.lmz, other.lmz))
 
     def __invert__(self):

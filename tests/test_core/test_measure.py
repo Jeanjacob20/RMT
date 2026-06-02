@@ -1,6 +1,8 @@
+import pytest
 import sympy as sp
 
 from rmtool_py.core.measure import AlgebraicMeasure as AM
+from rmtool_py.core.polynomial import BivariatePolynomial
 
 m, z, c = sp.symbols("m z c")
 
@@ -8,7 +10,6 @@ m, z, c = sp.symbols("m z c")
 def test_constructors_and_eq_proportional():
     a = AM.wigner()
     # 2*(m^2 + m z + 1) is the same measure (proportional L_mz).
-    from rmtool_py.core.polynomial import BivariatePolynomial
     b = AM(BivariatePolynomial(2 * m ** 2 + 2 * m * z + 2, m, z))
     assert a == b
     assert hash(a) == hash(b)
@@ -20,7 +21,6 @@ def test_distinct_measures_not_equal():
 
 def test_operator_add_is_free_sum_eq_1_2():
     out = AM.wigner() + AM.marchenko_pastur(sp.Rational(1, 2))
-    from rmtool_py.core.polynomial import BivariatePolynomial
     expected = BivariatePolynomial(
         m ** 3 + (z + 2) * m ** 2 + (2 * z - 1) * m + 2, m, z)
     assert out.lmz.is_proportional_to(expected)
@@ -28,7 +28,6 @@ def test_operator_add_is_free_sum_eq_1_2():
 
 def test_operator_mul_is_free_product_eq_1_4():
     out = AM.wigner() * AM.marchenko_pastur(sp.Rational(1, 2))
-    from rmtool_py.core.polynomial import BivariatePolynomial
     expected = BivariatePolynomial(
         m ** 4 * z ** 2 - 2 * m ** 3 * z + m ** 2 + 4 * m * z + 4, m, z)
     assert out.lmz.is_proportional_to(expected)
@@ -54,3 +53,23 @@ def test_moments_and_density_and_latex():
     info = mp.density([1.0])
     assert info.density[0] >= 0.0
     assert isinstance(mp.latex(), str) and "m" in mp.latex()
+
+
+def test_presentation_and_remaining_methods():
+    a = AM.atomic([1], [3])
+    assert isinstance(a.pretty(), str)
+    assert a.coefficient_table().shape[0] >= 1
+    assert isinstance(a.transpose(sp.Rational(1, 2)), AM)
+    assert isinstance(a.mobius(1, 0, 0, 1), AM)        # identity Mobius -> still a measure
+    s = sp.symbols("s")
+    assert isinstance(AM.atomic([1], [0]).gram_wishart(c, s), AM)
+    assert isinstance(a.compress(sp.Rational(1, 2)), AM)
+
+
+def test_add_returns_notimplemented_for_non_measure():
+    # operator with a non-measure operand should raise TypeError (NotImplemented path),
+    # not AttributeError.
+    with pytest.raises(TypeError):
+        _ = AM.wigner() + 5
+    with pytest.raises(TypeError):
+        _ = AM.wigner() * 5
