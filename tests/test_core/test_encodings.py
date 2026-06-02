@@ -3,6 +3,7 @@ import sympy as sp
 from rmtool_py.core.atoms import wigner_lmz
 from rmtool_py.core.polynomial import BivariatePolynomial
 from rmtool_py.core import encodings as enc
+from rmtool_py.core.algebra import boxplus
 
 m, z, g, r, s, y = sp.symbols("m z g r s y")
 
@@ -52,3 +53,15 @@ def test_to_encoding_unknown_source_raises():
     bad = BivariatePolynomial(q + w, q, w)
     with pytest.raises(ValueError):
         enc.to_encoding(bad, "mz")
+
+
+def test_free_sum_of_two_semicircles_is_degree_two():
+    # L_rg of Wigner is r - g (linear). boxplus over g of two copies, back to mz.
+    lmz = wigner_lmz()
+    lrg = enc.to_encoding(lmz, "rg")          # vars (r, g)
+    summed_rg = boxplus(lrg, lrg, r)          # add R-transforms over g
+    back = enc.to_encoding(
+        BivariatePolynomial(summed_rg.expr, r, g), "mz"
+    )
+    # result is a genuine Stieltjes polynomial: degree 2 in m
+    assert sp.Poly(back.expr, m).degree() == 2
