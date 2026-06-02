@@ -39,12 +39,24 @@ class BivariatePolynomial:
         """
         var = self.var1 if var is None else sp.sympify(var)
         e = sp.expand(self.expr)
+        if e == 0:
+            return BivariatePolynomial(sp.Integer(0), self.var1, self.var2)
         common = sp.gcd(e, sp.diff(e, var))
         quotient = sp.cancel(e / common)
         return BivariatePolynomial(sp.expand(quotient), self.var1, self.var2)
 
     def normalize(self):
-        """Full irreducLuv: clear denominators, then square-free w.r.t. both vars."""
+        """Full irreducLuv (Rao & Edelman 2008, Table 1): clear denominators,
+        then take the square-free part w.r.t. BOTH variables.
+
+        Taking gcd with the derivative w.r.t. each variable removes repeated
+        factors and any factor independent of that variable. For an irreducible
+        encoding polynomial this is a no-op; for a reducible one it discards
+        spurious curve components (e.g. a constant-m branch), returning the
+        irreducible defining polynomial. It is therefore NOT proportionality-
+        preserving on arbitrary reducible input, but IS idempotent on its own
+        (irreducible) output.
+        """
         bp = self.clear_denominators()
         bp = bp.make_squarefree(self.var1)
         bp = bp.make_squarefree(self.var2)
