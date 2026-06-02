@@ -19,6 +19,8 @@ def companion_matrix(bp, u):
     poly = sp.Poly(sp.expand(bp.expr), u)
     coeffs = poly.all_coeffs()           # leading first: [l_Du, ..., l_1, l_0]
     deg = poly.degree()
+    if deg < 1:
+        raise ValueError(f"bp has degree 0 in {u}; companion matrix requires degree >= 1")
     lead = coeffs[0]
     C = sp.zeros(deg, deg)
     for i in range(1, deg):
@@ -46,7 +48,10 @@ def _charpoly(C, u, other_var):
 
 
 def _other_var(bp, u):
-    others = [s for s in (bp.var1, bp.var2) if s != sp.sympify(u)]
+    u = sp.sympify(u)
+    others = [s for s in (bp.var1, bp.var2) if s != u]
+    if not others:
+        raise ValueError(f"{u!r} is not one of {bp.var1!r}, {bp.var2!r}")
     return others[0]
 
 
@@ -54,6 +59,8 @@ def boxplus(bp1, bp2, u):
     """u1(v) + u2(v): eigenvalues of (C1 ⊗ I) + (I ⊗ C2) (Prop. 4.6.1)."""
     u = sp.sympify(u)
     other = _other_var(bp1, u)
+    if _other_var(bp2, u) != other:
+        raise ValueError("bp1 and bp2 must share the same second variable")
     C1 = companion_matrix(bp1, u)
     C2 = companion_matrix(bp2, u)
     C3 = _kron(C1, sp.eye(C2.shape[0])) + _kron(sp.eye(C1.shape[0]), C2)
@@ -64,6 +71,8 @@ def boxtimes(bp1, bp2, u):
     """u1(v) * u2(v): eigenvalues of C1 ⊗ C2 (Prop. 4.6.2)."""
     u = sp.sympify(u)
     other = _other_var(bp1, u)
+    if _other_var(bp2, u) != other:
+        raise ValueError("bp1 and bp2 must share the same second variable")
     C1 = companion_matrix(bp1, u)
     C2 = companion_matrix(bp2, u)
     C3 = _kron(C1, C2)

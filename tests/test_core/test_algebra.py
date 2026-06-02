@@ -35,23 +35,34 @@ def test_companion_charpoly_recovers_polynomial():
 
 def test_boxplus_values_are_sums_of_roots():
     L3 = boxplus(L1, L2, u)
-    v0 = 2  # generic point where all polys have distinct roots
+    v0 = 2  # generic: L2's leading coeff v**2 - 3*v + 1 is nonzero here
     r1 = _roots_at(L1, v0)
     r2 = _roots_at(L2, v0)
     expected = _sorted_complex([a + b for a in r1 for b in r2])
     got = _roots_at(L3, v0)
     assert len(got) == len(expected)
+    assert len(got) == 4  # deg(L1) * deg(L2) = 2 * 2
     for a, b in zip(got, expected):
         assert abs(a - b) < 1e-6
 
 
 def test_boxtimes_values_are_products_of_roots():
     L3 = boxtimes(L1, L2, u)
-    v0 = 2
+    v0 = 2  # generic: L2's leading coeff v**2 - 3*v + 1 is nonzero here
     r1 = _roots_at(L1, v0)
     r2 = _roots_at(L2, v0)
     expected = _sorted_complex([a * b for a in r1 for b in r2])
     got = _roots_at(L3, v0)
     assert len(got) == len(expected)
+    assert len(got) == 4  # deg(L1) * deg(L2) = 2 * 2
     for a, b in zip(got, expected):
         assert abs(a - b) < 1e-6
+
+
+def test_boxplus_commutative():
+    v0 = 2
+    a = _roots_at(boxplus(L1, L2, u), v0)
+    b = _roots_at(boxplus(L2, L1, u), v0)
+    assert len(a) == len(b)
+    for x, y in zip(a, b):
+        assert abs(x - y) < 1e-6
