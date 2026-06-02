@@ -20,6 +20,6 @@ def atomic_lmz(weights, points):
     """
     if len(weights) != len(points):
         raise ValueError("weights and points must have equal length")
-    stieltjes = sum(sp.Rational(0) + w / (p - z) for w, p in zip(weights, points))
+    stieltjes = sum((w / (p - z) for w, p in zip(weights, points)), sp.Integer(0))
     bp = BivariatePolynomial(m - stieltjes, m, z)
     return bp.normalize()

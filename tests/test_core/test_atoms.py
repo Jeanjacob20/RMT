@@ -1,3 +1,4 @@
+import pytest
 import sympy as sp
 from rmtool_py.core.atoms import wigner_lmz, atomic_lmz
 from rmtool_py.core.polynomial import BivariatePolynomial
@@ -23,3 +24,8 @@ def test_atomic_single_point():
     bp = atomic_lmz([1], [a])
     expected = BivariatePolynomial(m * (a - z) - 1, m, z)
     assert bp.is_proportional_to(expected)
+
+
+def test_atomic_lmz_mismatched_lengths():
+    with pytest.raises(ValueError):
+        atomic_lmz([1], [0, 1])
