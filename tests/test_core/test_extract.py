@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 import sympy as sp
 
 from rmtool_py.core.atoms import wigner_lmz, marchenko_pastur
@@ -47,9 +48,6 @@ def test_moments_fast_falls_back_to_series(monkeypatch):
 def test_moments_invalid_method():
     with pytest.raises(ValueError, match="method"):
         extract.moments(wigner_lmz(), 3, method="bogus")
-
-
-import numpy as np
 
 
 def test_density_wigner_peak_at_zero():

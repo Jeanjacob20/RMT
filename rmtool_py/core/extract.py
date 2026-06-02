@@ -85,7 +85,11 @@ class PdfInfo:
 
 
 def _default_right_root(roots):
-    """Physical Stieltjes branch: among Im>0 roots, the largest imaginary part."""
+    """Physical Stieltjes branch: among Im>0 roots, the largest imaginary part.
+
+    This is the default heuristic (largest Im among upper-half-plane roots),
+    not a guaranteed analytic continuation for every spectral law.
+    """
     upper = [r for r in roots if r.imag > 1e-9]
     if not upper:
         return 0.0 + 0.0j
@@ -95,9 +99,20 @@ def _default_right_root(roots):
 def density(L, grid, eps=1e-8, root_selector=None):
     """Limiting eigenvalue density on ``grid`` (RMTool ``Lmz2pdf``).
 
-    For each x, solve L_mz(m, x + i eps) for all roots in m and report
-    rho(x) = (1/pi) Im m_right.  All roots are returned in ``all_roots``.
-    ``root_selector(roots) -> complex`` overrides the default branch choice.
+    For each x, solve L_mz(m, x + i*eps) for all roots in m and report
+    rho(x) = (1/pi) Im m_right.  All roots are returned in ``all_roots``
+    for transparency; ``root_selector(roots) -> complex`` overrides the
+    default branch choice.
+
+    Root-selector heuristic: the default picks the upper-half-plane root
+    with the largest imaginary part.  This is unambiguous for single-branch
+    laws (Wigner, Marchenko-Pastur), but may select the wrong analytic
+    continuation for multi-branch laws (e.g. free sum of two MPs).  Pass a
+    custom ``root_selector`` or inspect ``all_roots`` in those cases.
+
+    eps trade-off: larger eps regularises near-real roots (smooth density
+    estimate) but smears sharp edges; smaller eps is more accurate in the
+    bulk but may admit numerical noise from roots that are nearly real.
     """
     select = root_selector or _default_right_root
     mvar = L.var1
@@ -107,7 +122,16 @@ def density(L, grid, eps=1e-8, root_selector=None):
     for x in grid:
         zc = complex(x) + 1j * eps
         coeffs = [complex(c.subs(zvar, zc)) for c in poly_m.all_coeffs()]
-        roots = list(np.roots(coeffs)) if len(coeffs) > 1 else []
+        if len(coeffs) <= 1:
+            warnings.warn(
+                f"density: L_mz polynomial is degree 0 in m at x={x!r} "
+                "(constant in m); this indicates a degenerate or mis-encoded "
+                "spectral law — density reported as 0 at this point.",
+                stacklevel=2,
+            )
+            roots = []
+        else:
+            roots = list(np.roots(coeffs))
         rng.append(float(x))
         allroots.append(roots)
         dens.append(max(select(roots).imag / np.pi, 0.0))
