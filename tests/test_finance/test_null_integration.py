@@ -51,7 +51,10 @@ def test_market_mode_detected_and_removed():
     _, hi = mp_edges(Q=T / N, sigma2=1.0)
     info = information_eigenvalues(eigs, hi)
     assert len(info) >= 1                    # market eigenvalue above the edge
-    assert info.max() > 5 * hi               # >> lambda_max, as Laloux report
+    assert info.max() > 5 * hi               # >> lambda_+ (MP upper edge), as Laloux report
 
     mm = remove_market_mode(C)
-    assert np.linalg.eigvalsh(mm.deflated).max() < mm.eigval
+    assert np.isclose(mm.eigval, eigs.max())          # the dominant eigenpair was removed
+    # after removal the residual spectrum should sit inside the rescaled MP bulk
+    _, hi_res = mp_edges(Q=T / N, sigma2=mm.sigma2_residual)
+    assert np.linalg.eigvalsh(mm.deflated).max() < hi_res + 0.15
