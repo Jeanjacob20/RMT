@@ -4,6 +4,12 @@ Closed-form MP (their Eq. 3), with c = N/T = 1/Q:
     edges  λ± = σ²(1 + 1/Q ± 2√(1/Q))
     ρ(λ)   = (Q / 2πσ²) · √((λ₊ − λ)(λ − λ₋)) / λ   on [λ₋, λ₊], else 0.
 These are pinned by tests to agree with core.marchenko_pastur(1/Q).scale(σ²).
+
+Validity: the closed-form density is the Laloux/finance regime Q ≥ 1 (c = N/T ≤ 1),
+where the law is purely continuous and integrates to 1. For Q < 1 (c > 1) the MP
+law additionally carries a point mass (1 − Q) at λ = 0 that the continuous form
+here omits, so it would integrate to Q rather than 1; callers in that regime must
+add the atom themselves.
 """
 
 from dataclasses import dataclass
@@ -29,7 +35,10 @@ def mp_edges(Q, sigma2=1.0):
 
 
 def mp_density(lam, Q, sigma2=1.0):
-    """Closed-form MP density on the grid ``lam`` (0 outside the support)."""
+    """Closed-form MP density on the grid ``lam`` (0 outside the support).
+
+    Valid for Q ≥ 1 (c ≤ 1); see the module docstring for the Q < 1 atom at 0.
+    """
     lam = np.asarray(lam, dtype=float)
     lo, hi = mp_edges(Q, sigma2)
     out = np.zeros_like(lam)
