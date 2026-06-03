@@ -25,11 +25,11 @@ def _moments_series(L, k):
     poly = sp.expand(sp.numer(sp.cancel(sp.together(lmuz.subs(mu, series)))))
     sol, moments = {}, []
     for j in range(1, k + 1):
+        target = coeffs[j - 1]
         cj = sp.expand(poly.coeff(z, j).subs(sol))
-        unknown = [sym for sym in cj.free_symbols if sym in coeffs]
-        if unknown:
-            sol[unknown[0]] = sp.solve(cj, unknown[0])[0]
-            moments.append(sp.simplify(sol[unknown[0]]))
+        if cj.has(target):
+            sol[target] = sp.solve(cj, target)[0]
+            moments.append(sp.simplify(sol[target]))
         else:
             moments.append(sp.Integer(0))
     return moments

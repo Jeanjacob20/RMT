@@ -59,6 +59,8 @@ def transpose(L, c):
     """If A = X X' then B = X' X, with c = Size(A)/Size(B)  (Table 7, project/augment
     with the augmenting atom at 0):  m -> (1 - 1/c)/(0 - z) + m/c."""
     c = sp.sympify(c)
+    if c == 0:
+        raise ValueError("transpose ratio c must be nonzero")
     mb = (1 - 1 / c) * (1 / (0 - z)) + m / c
     return _mz(L.expr.subs(m, mb, simultaneous=True))
 
