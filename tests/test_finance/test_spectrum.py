@@ -1,7 +1,7 @@
 import numpy as np
 
 from rmtool_py import AlgebraicMeasure as AM
-from rmtool_py.finance.spectrum import mp_edges, _mp_density
+from rmtool_py.finance.spectrum import mp_edges, mp_density
 
 
 def test_mp_edges_closed_form_exact():
@@ -26,7 +26,7 @@ def test_mp_density_integrates_to_one():
     Q, s2 = 3.0, 1.0
     lo, hi = mp_edges(Q, s2)
     grid = np.linspace(lo, hi, 4000)
-    mass = np.trapz(_mp_density(grid, Q, s2), grid)
+    mass = np.trapz(mp_density(grid, Q, s2), grid)
     assert abs(mass - 1.0) < 1e-2
 
 
@@ -36,7 +36,7 @@ def test_mp_density_matches_engine_shape():
     lo, hi = mp_edges(Q, s2)
     grid = np.linspace(lo + 1e-3, hi - 1e-3, 400)
     eng = np.array(AM.marchenko_pastur(1.0 / Q).scale(s2).density(grid).density)
-    clo = _mp_density(grid, Q, s2)
+    clo = mp_density(grid, Q, s2)
     # compare normalized cumulative curves (CDF) -> KS-like distance
     def cdf(d):
         c = np.concatenate([[0], np.cumsum((d[1:] + d[:-1]) / 2 * np.diff(grid))])

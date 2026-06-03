@@ -28,7 +28,7 @@ def mp_edges(Q, sigma2=1.0):
     return sigma2 * (1.0 + r - 2.0 * s), sigma2 * (1.0 + r + 2.0 * s)
 
 
-def _mp_density(lam, Q, sigma2=1.0):
+def mp_density(lam, Q, sigma2=1.0):
     """Closed-form MP density on the grid ``lam`` (0 outside the support)."""
     lam = np.asarray(lam, dtype=float)
     lo, hi = mp_edges(Q, sigma2)
@@ -75,7 +75,7 @@ def fit_marchenko_pastur(eigs, Q):
         nbins = min(40, max(10, len(bulk) // 3))
         heights, edges = np.histogram(bulk, bins=nbins, density=True)
         centers = 0.5 * (edges[:-1] + edges[1:])
-        return float(np.mean((heights - _mp_density(centers, Q, s2)) ** 2))
+        return float(np.mean((heights - mp_density(centers, Q, s2)) ** 2))
 
     res = minimize_scalar(loss, bounds=(0.05, 3.0), method="bounded")
     sigma2_lsq = float(res.x)

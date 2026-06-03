@@ -5,7 +5,7 @@ Porter–Thomas (Fig. 2).  Each returns ``(fig, ax)`` and never calls ``show()``
 import numpy as np
 import matplotlib.pyplot as plt
 
-from ..finance.spectrum import mp_edges, _mp_density
+from ..finance.spectrum import mp_edges, mp_density
 from ..finance.eigenvectors import component_distribution, porter_thomas_pdf
 
 
@@ -21,7 +21,7 @@ def plot_spectrum(eigs, *, Q=None, sigma2=1.0, bins=50, ax=None):
     if Q is not None:
         lo, hi = mp_edges(Q, sigma2)
         grid = np.linspace(max(lo, 1e-6), hi, 400)
-        ax.plot(grid, _mp_density(grid, Q, sigma2), "r-", lw=2,
+        ax.plot(grid, mp_density(grid, Q, sigma2), "r-", lw=2,
                 label="Marčenko–Pastur")
     ax.set_xlabel("eigenvalue λ")
     ax.set_ylabel("ρ(λ)")
