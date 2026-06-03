@@ -32,6 +32,8 @@ def test_gold_standard_two_atom_population():
     pop = AM.atomic([0.5, 0.5], [a, b])
     predicted = pop.times_wishart(c)
 
+    # standardize=False (covariance): keeps the two-atom population intact;
+    # standardize=True would normalize rows to unit variance and erase it.
     eigs = np.sort(np.linalg.eigvalsh(correlation_matrix(R, standardize=False).C))
     ks = _ks(eigs, predicted, gridmax=7.0)
     assert ks < 0.05                      # measured ~0.005
