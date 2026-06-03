@@ -72,7 +72,8 @@ def fit_marchenko_pastur(eigs, Q):
         bulk = eigs[(eigs >= lo) & (eigs <= hi)]
         if len(bulk) < 10:
             return 1e6
-        heights, edges = np.histogram(bulk, bins=40, density=True)
+        nbins = min(40, max(10, len(bulk) // 3))
+        heights, edges = np.histogram(bulk, bins=nbins, density=True)
         centers = 0.5 * (edges[:-1] + edges[1:])
         return float(np.mean((heights - _mp_density(centers, Q, s2)) ** 2))
 
