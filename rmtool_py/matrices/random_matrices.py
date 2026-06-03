@@ -17,7 +17,8 @@ class RandomMatrixGenerator:
     """
 
     @staticmethod
-    def _rng(seed):
+    def _rng(seed) -> np.random.Generator:
+        """Return a Generator: pass through an existing one, else seed default_rng (int/None)."""
         return seed if isinstance(seed, np.random.Generator) else np.random.default_rng(seed)
 
     @staticmethod

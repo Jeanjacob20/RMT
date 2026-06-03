@@ -27,7 +27,7 @@ def test_goe_semicircle_edge_is_2sigma():
     sigma = 1.5
     a = RMG.generate_goe(800, sigma=sigma, seed=3)
     lam_max = np.linalg.eigvalsh(a).max()
-    assert abs(lam_max - 2 * sigma) < 0.2 * sigma
+    assert abs(lam_max - 2 * sigma) < 0.1 * sigma
 
 
 def test_gue_hermitian_and_seeded():
@@ -48,3 +48,26 @@ def test_wishart_reproducible_and_normalized():
 def test_wishart_df_guard():
     with pytest.raises(ValueError):
         RMG.generate_wishart(20, 10, seed=0)
+
+
+def test_gue_sigma_scales_linearly():
+    base = RMG.generate_gue(30, sigma=1.0, seed=2)
+    scaled = RMG.generate_gue(30, sigma=3.0, seed=2)
+    assert np.allclose(scaled, 3.0 * base)
+
+
+def test_inverse_wishart_df_guard():
+    with pytest.raises(ValueError):
+        RMG.generate_inverse_wishart(20, 10, seed=0)
+
+
+def test_inverse_wishart_reproducible():
+    a = RMG.generate_inverse_wishart(5, 8, seed=6)
+    b = RMG.generate_inverse_wishart(5, 8, seed=6)
+    assert np.allclose(a, b)
+
+
+def test_goe_accepts_generator_seed():
+    rng = np.random.default_rng(0)
+    a = RMG.generate_goe(10, seed=rng)
+    assert a.shape == (10, 10)
