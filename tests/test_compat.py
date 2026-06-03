@@ -27,6 +27,7 @@ def test_quickstart_density_runs():
     info = rt.Lmz2pdf(rt.wishartpol(sp.Rational(1, 2)), list(np.arange(-0.05, 5.0, 0.05)))
     assert hasattr(info, "range") and hasattr(info, "density")
     assert len(info.range) == len(info.density)
+    assert all(d >= 0.0 and np.isfinite(d) for d in info.density)
 
 
 def test_quickstart_aplusb_symbolic_c():
@@ -40,7 +41,7 @@ def test_section_2_5_atimesb_runs():
     b3 = rt.AtimesB(rt.wishartpol(c), rt.wignerpol())
     assert isinstance(rt.latex(b3), str)
     assert isinstance(rt.pretty(b3), str)
-    assert rt.TLmz(b3).shape[0] >= 1
+    assert rt.TLmz(b3).shape == (5, 3)
 
 
 def test_deterministic_compat_names():
