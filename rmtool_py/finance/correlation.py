@@ -2,7 +2,7 @@
 
 Convention: ``C = (1/T) M Mᵀ`` from an N×T returns matrix (N assets, T obs).
 ``standardize=True`` (default) rescales each demeaned row to unit variance, so C
-is a correlation matrix with unit diagonal; ``standardize=False`` returns the
+is a correlation matrix with unit diagonal (a zero-variance row leaves its diagonal entry at 0); ``standardize=False`` returns the
 (1/T-normalized) covariance.  Records N, T and Q = T/N.
 """
 
@@ -44,7 +44,11 @@ def correlation_matrix(returns, *, demean=True, standardize=True):
 
 
 def remove_market_mode(C):
-    """Deflate the largest (market) eigenpair; return a :class:`MarketMode`."""
+    """Deflate the largest (market) eigenpair; return a :class:`MarketMode`.
+
+    ``sigma2_residual`` equals ``(Tr(C) − λ) / N``; it is meaningful as a residual
+    spectral fraction only when *C* is a unit-diagonal correlation matrix.
+    """
     C = np.asarray(C, dtype=float)
     N = C.shape[0]
     vals, vecs = np.linalg.eigh(C)            # ascending

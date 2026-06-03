@@ -47,3 +47,11 @@ def test_remove_market_mode_deflates_top_eigenvalue():
     assert mm.eigval > lam_after            # market eigenvalue was the top one
     assert lam_after < lam_before
     assert np.isclose(mm.sigma2_residual, 1.0 - mm.eigval / N)
+
+
+def test_demeaning_makes_correlation_shift_invariant():
+    rng = np.random.default_rng(5)
+    R = rng.standard_normal((8, 300))
+    base = correlation_matrix(R).C
+    shifted = correlation_matrix(R + 100.0).C   # constant shift removed by demean
+    assert np.allclose(base, shifted, atol=1e-10)
