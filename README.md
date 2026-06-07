@@ -88,6 +88,13 @@ sampling.
 
 ### Flagship application: noise-dressing of the S&P 500
 
+> **Result —** on the real S&P 500 (413 stocks, daily 2018–2022, CRSP/WRDS),
+> a Marčenko–Pastur fit shows **94% of correlation eigenvalues (387/413) are
+> statistically indistinguishable from noise**; only the *market mode* (44% of
+> total variance) plus ~25 factors carry signal — reproducing Laloux–Bouchaud
+> (1999) on modern data and quantifying the estimation noise behind unstable
+> mean–variance portfolios.
+
 The finance layer (`rmtool_py.finance`) applies the same theory to **real market
 data**, reproducing Laloux–Cizeau–Bouchaud–Potters' *"Noise Dressing of Financial
 Correlation Matrices"* (1999). On 413 stocks continuously in the S&P 500, daily
