@@ -3,6 +3,6 @@
 __version__ = "0.1.0"
 
 from .core import AlgebraicMeasure
-from . import compat
+from . import compat, finance, viz
 
-__all__ = ["AlgebraicMeasure", "compat", "__version__"]
+__all__ = ["AlgebraicMeasure", "compat", "finance", "viz", "__version__"]
