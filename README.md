@@ -5,7 +5,7 @@
 <!-- Badges (wired up as they land): -->
 <!-- ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg) -->
 <!-- ![Python](https://img.shields.io/badge/python-3.8%2B-blue) -->
-<!-- ![CI](https://img.shields.io/badge/tests-77%20passing-brightgreen) -->
+<!-- ![CI](https://img.shields.io/badge/tests-119%20passing-brightgreen) -->
 
 `rmtool_py` treats a spectral distribution as a first-class algebraic object: a
 limiting eigenvalue law is carried as the bivariate polynomial that *defines*
@@ -86,6 +86,36 @@ The symbolic curve matches the Monte-Carlo histogram across the whole bulk
 (to within histogram binning error) — but it was computed once, exactly, with no
 sampling.
 
+### Flagship application: noise-dressing of the S&P 500
+
+The finance layer (`rmtool_py.finance`) applies the same theory to **real market
+data**, reproducing Laloux–Cizeau–Bouchaud–Potters' *"Noise Dressing of Financial
+Correlation Matrices"* (1999). On 413 stocks continuously in the S&P 500, daily
+returns 2018–2022 (CRSP via WRDS; **N = 413, T = 1259, Q = 3.05** — essentially
+the original paper's setup), the package fits the empirical correlation spectrum
+to Marčenko–Pastur and separates signal from noise:
+
+![S&P 500 correlation spectrum vs Marčenko–Pastur](docs/figures/sp500_mp_spectrum.png)
+
+```python
+import numpy as np
+from rmtool_py.finance import correlation_matrix, fit_marchenko_pastur, information_eigenvalues, mp_edges
+
+corr = correlation_matrix(returns, standardize=True)   # returns: N×T daily panel
+eigs = np.linalg.eigvalsh(corr.C)
+fit  = fit_marchenko_pastur(eigs, corr.Q)              # σ² = 1 − λ_max/N = 0.56
+_, lam_plus = mp_edges(corr.Q, fit.sigma2_market)      # noise edge λ₊ = 1.39
+info = information_eigenvalues(eigs, lam_plus)         # the few "signal" modes
+```
+
+**The result:** the largest eigenvalue (the *market mode*) alone carries **44% of
+total variance**, while **94% of all eigenvalues (387/413) fall inside the
+Marčenko–Pastur noise band** — statistically indistinguishable from a random
+matrix. Only ~26 eigenvalues carry genuine signal: the market plus a handful of
+sector/factor structures. This is the estimation noise that corrupts naïve
+mean–variance portfolio optimization, made quantitative. The full reproduction
+(WRDS data pull + figure) is in [`examples/`](examples/).
+
 ## What you can do
 
 - **Free convolution as algebra** — free additive `a + b` (⊞) and free
@@ -140,7 +170,10 @@ under the supervision of **Dr. Sakuma**.
 
 ## Status
 
-Phases 1–2 (the symbolic engine: encodings, operational laws, density and moment
-extraction, the `AlgebraicMeasure` API, and the RMTool compatibility shim) are
-complete, with 77 passing tests. Phase 3 — a dedicated finance layer and
-visualization helpers (reproducing the Laloux–Bouchaud figures) — is in progress.
+Phases 1–3 are complete (119 passing tests):
+
+- **Phases 1–2** — the symbolic engine: encodings, operational laws, density and
+  moment extraction, the `AlgebraicMeasure` API, and the RMTool compatibility shim.
+- **Phase 3** — the finance layer (correlation cleaning, Marčenko–Pastur fitting,
+  eigenvector statistics, factor-model generators) and visualization helpers,
+  reproducing the Laloux–Bouchaud figures on real S&P 500 data (see above).
