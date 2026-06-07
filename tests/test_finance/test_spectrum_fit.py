@@ -33,6 +33,27 @@ def test_fit_market_estimator_drops_with_spike():
     assert fit.bulk_var_fraction < 1.0
 
 
+def test_fit_lsq_robust_to_dominant_outliers():
+    # A dominant 'market' mode plus several 'sector' modes on a unit-variance bulk
+    # must NOT drag the least-squares σ² up: the self-selecting fit window used to
+    # run away to the optimizer's upper bound on real (e.g. S&P 500) spectra.
+    rng = np.random.default_rng(7)
+    N, T = 400, 1200                       # Q=3
+    noise = rng.standard_normal((N, T))
+    market = rng.standard_normal(T)
+    sectors = rng.standard_normal((4, T))
+    load = np.zeros((N, 4))
+    for k in range(4):
+        load[k * 100:(k + 1) * 100, k] = 1.0
+    R = noise + 3.0 * np.outer(np.ones(N), market) + load @ sectors
+    eigs = np.linalg.eigvalsh(correlation_matrix(R).C)
+    fit = fit_marchenko_pastur(eigs, Q=T / N)
+    # the LSQ bulk estimator must agree with the robust market estimator...
+    assert abs(fit.sigma2_lsq - fit.sigma2_market) < 0.1
+    # ...and must not pin to the optimizer's upper search bound.
+    assert fit.sigma2_lsq < 1.0
+
+
 def test_information_eigenvalues_above_edge():
     eigs = np.array([0.1, 0.5, 1.0, 1.8, 9.0, 25.0])
     _, hi = mp_edges(Q=4.0, sigma2=1.0)     # hi = 2.25

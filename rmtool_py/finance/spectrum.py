@@ -71,23 +71,37 @@ def fit_marchenko_pastur(eigs, Q):
 
     Assumes ``eigs`` are eigenvalues of a correlation matrix (trace = N), so the
     market estimator σ² = 1 − λ_max/N is meaningful.
+
+    The least-squares estimator fits the MP density to a **fixed** bulk window —
+    the eigenvalues at or below the upper edge implied by the market estimator
+    (with a small safety margin). Selecting the window from the trial σ² instead
+    is unstable: on real spectra with a dominant market mode and several large
+    factor eigenvalues (e.g. the S&P 500) the optimizer widens the band to engulf
+    those outliers and σ² runs away to the search bound. Excluding the signal
+    outliers up front keeps the histogram target fixed so only the MP curve's σ²
+    is varied, and the two estimators agree on the noise level.
     """
     eigs = np.sort(np.asarray(eigs, dtype=float))
     N = len(eigs)
     sigma2_market = 1.0 - eigs[-1] / N
 
-    def loss(s2):
-        lo, hi = mp_edges(Q, s2)
-        bulk = eigs[(eigs >= lo) & (eigs <= hi)]
-        if len(bulk) < 10:
-            return 1e6
+    # Fixed candidate bulk: drop the signal outliers above the market-estimator
+    # upper edge before fitting (margin guards a slightly under-compressed bulk).
+    _, hi_market = mp_edges(Q, max(sigma2_market, 1e-6))
+    bulk = eigs[eigs <= 1.5 * hi_market]
+    if len(bulk) >= 10:
         nbins = min(40, max(10, len(bulk) // 3))
         heights, edges = np.histogram(bulk, bins=nbins, density=True)
         centers = 0.5 * (edges[:-1] + edges[1:])
-        return float(np.mean((heights - mp_density(centers, Q, s2)) ** 2))
 
-    res = minimize_scalar(loss, bounds=(0.05, 3.0), method="bounded")
-    sigma2_lsq = float(res.x)
+        def loss(s2):
+            return float(np.mean((heights - mp_density(centers, Q, s2)) ** 2))
+
+        res = minimize_scalar(loss, bounds=(0.05, 3.0), method="bounded")
+        sigma2_lsq = float(res.x)
+    else:
+        sigma2_lsq = sigma2_market
+
     lo, hi = mp_edges(Q, sigma2_lsq)
     mask = (eigs >= lo) & (eigs <= hi)
     return MPFit(
